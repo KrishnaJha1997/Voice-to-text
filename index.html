@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice to Text Converter</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --bg-color: #f9fafb;
+      --card-bg: #ffffff;
+      --text-color: #1f2937;
+      --border-color: #e5e7eb;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    header {
+      padding: 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .content {
+      padding: 1.5rem;
+    }
+
+    .text-box {
+      width: 100%;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      background-color: #f9fafb;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: white;
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background-color: #f3f4f6;
+    }
+
+    .pulse {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #ef4444;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+      }
+      
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+      }
+      
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      }
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    @media (max-width: 600px) {
+      .controls {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Voice to Text Converter</h1>
+      <p class="subtitle">Speak and see your words appear in real-time</p>
+    </header>
+    
+    <div class="content">
+      <div class="text-box" id="output" contenteditable="true"></div>
+      
+      <div class="controls">
+        <button id="startBtn" class="btn btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" x2="12" y1="19" y2="22"></line>
+          </svg>
+          Start Recording
+        </button>
+        <button id="stopBtn" class="btn btn-secondary" disabled>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="6" height="6" x="9" y="9"></rect>
+          </svg>
+          Stop
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+          </svg>
+          Clear Text
+        </button>
+      </div>
+      
+      <div class="stats">
+        <div class="status-indicator">
+          <div id="statusIndicator" class="pulse hidden"></div>
+          <span id="statusText">Ready</span>
+        </div>
+        <div id="wordCount">0 words</div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      Using Web Speech API | Click Start to begin recording
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const startBtn = document.getElementById('startBtn');
+      const stopBtn = document.getElementById('stopBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const output = document.getElementById('output');
+      const wordCount = document.getElementById('wordCount');
+      const statusText = document.getElementById('statusText');
+      const statusIndicator = document.getElementById('statusIndicator');
+      
+      let recognition;
+      let isRecording = false;
+      
+      // Check if browser supports SpeechRecognition
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        // Initialize speech recognition
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        
+        recognition.onstart = () => {
+          isRecording = true;
+          statusText.textContent = 'Listening...';
+          statusIndicator.classList.remove('hidden');
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+        };
+        
+        recognition.onend = () => {
+          isRecording = false;
+          statusText.textContent = 'Stopped';
+          statusIndicator.classList.add('hidden');
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+        };
+        
+        recognition.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript + ' ';
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+          
+          if (finalTranscript) {
+            // If we already have content, add a space before appending
+            if (output.textContent.trim().length > 0 && !output.textContent.endsWith(' ')) {
+              output.textContent += ' ';
+            }
+            output.textContent += finalTranscript;
+            updateWordCount();
+          }
+          
+          // For displaying interim results, you could add logic here if needed
+        };
+        
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error:', event.error);
+          statusText.textContent = `Error: ${event.error}`;
+          statusIndicator.classList.add('hidden');
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+        };
+        
+      } else {
+        // Browser doesn't support speech recognition
+        output.textContent = "Your browser doesn't support speech recognition. Please try Chrome or Edge.";
+        startBtn.disabled = true;
+        stopBtn.disabled = true;
+      }
+      
+      // Start recording
+      startBtn.addEventListener('click', () => {
+        if (!isRecording && recognition) {
+          recognition.start();
+        }
+      });
+      
+      // Stop recording
+      stopBtn.addEventListener('click', () => {
+        if (isRecording && recognition) {
+          recognition.stop();
+        }
+      });
+      
+      // Clear text
+      clearBtn.addEventListener('click', () => {
+        output.textContent = '';
+        updateWordCount();
+      });
+      
+      // Update word count
+      function updateWordCount() {
+        const text = output.textContent.trim();
+        const words = text ? text.split(/\s+/).length : 0;
+        wordCount.textContent = `${words} word${words !== 1 ? 's' : ''}`;
+      }
+      
+      // Allow manual editing of the text and update word count
+      output.addEventListener('input', updateWordCount);
+    });
+  </script>
+</body>
+</html>
