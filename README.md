@@ -32,7 +32,7 @@ A working microphone
 
 ##Installation
 Clone this repository:
-git clone https://github.com/yourusername/voice-to-text-converter.git
+git clone https://github.com/KrishnaJha1997/voice-to-text-converter.git
 
 Navigate to the project directory:
 cd voice-to-text-converter
